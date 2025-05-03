@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTF Challenge: Malicious Memory</title>
+</head>
+<body>
+  <h1>Blog Post</h1>
+  <p>This is a comment section where you can leave feedback.</p>
+
+  <h2>Leave a Comment:</h2>
+  <form id="commentForm">
+    <textarea id="comment" rows="4" cols="50" placeholder="Leave your comment"></textarea><br>
+    <button type="submit">Submit Comment</button>
+  </form>
+
+  <div id="commentsSection" style="margin-top: 20px;">
+    <h3>Comments</h3>
+    <!-- Simulated comment display area -->
+  </div>
+
+  <script>
+    // Simulate storing the comment (feedback form input)
+    document.getElementById("commentForm").onsubmit = function(e) {
+      e.preventDefault();
+      const comment = document.getElementById("comment").value;
+      localStorage.setItem("comment", comment); // Store the comment in local storage
+      location.reload(); // Simulate page reload
+    };
+
+    // Simulate admin visiting the page and loading stored comments
+    const storedComment = localStorage.getItem("comment");
+    if (storedComment) {
+      const commentsSection = document.getElementById("commentsSection");
+      commentsSection.innerHTML = `<p>${storedComment}</p>`;  // Display stored comment (vulnerable)
+
+      // Simulating the admin's session cookie
+      document.cookie = "AdminSession=abc123"; 
+
+      // If a malicious payload exists in the comment (contains script tag), execute it
+      if (storedComment.includes("<script>")) {
+        // Exfiltrate cookie data to a mock /flag endpoint
+        const cookie = document.cookie;
+        const img = new Image();
+        img.src = "/flag?cookie=" + encodeURIComponent(cookie); // Send cookie to /flag endpoint
+      }
+    }
+  </script>
+</body>
+</html>
