@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CTF Challenge: Malicious Memory</title>
+  <title>Stored XSS - Malicious Memory</title>
 </head>
 <body>
   <h1>Blog Post</h1>
@@ -15,46 +14,39 @@
     <button type="submit">Submit Comment</button>
   </form>
 
-  <div id="commentsSection" style="margin-top: 20px;">
+  <div id="commentsSection">
     <h3>Comments</h3>
-    <!-- Simulated comment display area -->
   </div>
 
   <script>
-    // Simulate storing the comment (feedback form input)
+    // Store the comment on form submit
     document.getElementById("commentForm").onsubmit = function(e) {
       e.preventDefault();
       const comment = document.getElementById("comment").value;
-      localStorage.setItem("comment", comment); // Store the comment in local storage
-      location.reload(); // Simulate page reload
+      localStorage.setItem("comment", comment);
+      location.reload();
     };
 
-    // Simulate admin visiting the page and loading stored comments
+    // Simulate Admin session cookie
+    document.cookie = "AdminSession=abc123";
+
+    // Display stored comment
     const storedComment = localStorage.getItem("comment");
     if (storedComment) {
-      const commentsSection = document.getElementById("commentsSection");
-      commentsSection.innerHTML = `<p>${storedComment}</p>`;  // Display stored comment (vulnerable)
-
-      // Simulating the admin's session cookie
-      document.cookie = "AdminSession=abc123"; 
-
-      // If a malicious payload exists in the comment (contains script tag), execute it
+      document.getElementById("commentsSection").innerHTML += `<p>${storedComment}</p>`;
+      
+      // Execute payload if <script> present
       if (storedComment.includes("<script>")) {
-        // Exfiltrate cookie data to a mock /flag endpoint
-        const cookie = document.cookie;
-        const img = new Image();
-        img.src = "/flag?cookie=" + encodeURIComponent(cookie); // Send cookie to /flag endpoint
+        // Simulate exfiltration to /flag
+        const stolenCookie = document.cookie;
+        // Add cookie to URL so we can simulate "flag" display
+        window.location.href = window.location.pathname + "?cookie=" + encodeURIComponent(stolenCookie);
       }
     }
-  </script>
 
-  <script>
-    // Simulate the flag retrieval for the successful XSS exfiltration
-    const urlParams = new URLSearchParams(window.location.search);
-    const stolenCookie = urlParams.get("cookie");
-
-    if (stolenCookie) {
-      // If cookie is captured, simulate the flag being revealed
+    // Simulate server-side flag retrieval
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("cookie") === "AdminSession=abc123") {
       alert("Flag: THM{stored_xss_steals_sessions}");
     }
   </script>
