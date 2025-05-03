@@ -47,5 +47,16 @@
       }
     }
   </script>
+
+  <script>
+    // Simulate the flag retrieval for the successful XSS exfiltration
+    const urlParams = new URLSearchParams(window.location.search);
+    const stolenCookie = urlParams.get("cookie");
+
+    if (stolenCookie) {
+      // If cookie is captured, simulate the flag being revealed
+      alert("Flag: THM{stored_xss_steals_sessions}");
+    }
+  </script>
 </body>
 </html>
